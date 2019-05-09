@@ -5129,6 +5129,16 @@ var author$project$ComponentTable$initialComponents = elm$core$Dict$fromList(
 				author$project$Child$init1(
 					elm$core$Maybe$Just(3)))),
 			_Utils_Tuple2(
+			5,
+			author$project$ComponentTable$Count(
+				author$project$Child$init1(
+					elm$core$Maybe$Just(3)))),
+			_Utils_Tuple2(
+			6,
+			author$project$ComponentTable$Count(
+				author$project$Child$init1(
+					elm$core$Maybe$Just(3)))),
+			_Utils_Tuple2(
 			3,
 			author$project$ComponentTable$CountParent(author$project$Parent$init))
 		]));
@@ -5870,7 +5880,7 @@ var author$project$ComponentTable$queryChildren = F2(
 			_List_Nil,
 			components);
 	});
-var author$project$ComponentTable$wireChildParent = F3(
+var author$project$ComponentTable$makeParentView = F3(
 	function (components, parentId, parentModel) {
 		return A3(
 			author$project$Child$nestedView,
@@ -5885,7 +5895,7 @@ var author$project$ComponentTable$construct = F3(
 			return A2(author$project$ComponentTable$makeChildView, id, model);
 		} else {
 			var model = component.a;
-			return A3(author$project$ComponentTable$wireChildParent, components, id, model);
+			return A3(author$project$ComponentTable$makeParentView, components, id, model);
 		}
 	});
 var elm$core$Dict$get = F2(

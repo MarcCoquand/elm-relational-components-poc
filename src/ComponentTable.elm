@@ -162,6 +162,8 @@ initialComponents =
     Dict.fromList
         [ ( 1, Count (Child.init1 Nothing) )
         , ( 4, Count (Child.init1 (Just 3)) )
+        , ( 5, Count (Child.init1 (Just 3)) )
+        , ( 6, Count (Child.init1 (Just 3)) )
         , ( 3, CountParent Parent.init )
         ]
 
