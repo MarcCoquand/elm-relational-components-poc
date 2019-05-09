@@ -63,11 +63,6 @@ makeChildView renderId mdl =
     Child.view (GotCountMsg renderId mdl) mdl
 
 
-makeParentView : ComponentId -> Parent.Model -> Html Msg
-makeParentView renderId mdl =
-    Parent.view (GotParentMsg renderId mdl) mdl
-
-
 wireChildParent :
     Dict ComponentId Component
     -> ComponentId
