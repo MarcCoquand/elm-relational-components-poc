@@ -78,8 +78,8 @@ makeParentView renderId parent childId child =
         (Parent.view (Child.view child) parent)
 
 
-getChild : ComponentId -> Dict ComponentId Component -> Maybe Child.Model
-getChild id components =
+queryChild : ComponentId -> Dict ComponentId Component -> Maybe Child.Model
+queryChild id components =
     Dict.get id components
         |> Maybe.andThen
             (\component ->
@@ -102,7 +102,7 @@ renderComponent id components =
                         Just (makeChildView id model)
 
                     CountParent model ->
-                        getChild model.childId components
+                        queryChild model.childId components
                             |> Maybe.map (makeParentView id model model.childId)
             )
 
