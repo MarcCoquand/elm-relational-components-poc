@@ -63,12 +63,12 @@ makeChildView renderId mdl =
     Child.view (GotCountMsg renderId mdl) mdl
 
 
-wireChildParent :
+makeParentView :
     Dict ComponentId Component
     -> ComponentId
     -> Parent.Model
     -> Html Msg
-wireChildParent components parentId parentModel =
+makeParentView components parentId parentModel =
     queryChildren parentId components
         |> Child.nestedView (GotParentMsg parentId parentModel) parentModel
 
@@ -129,7 +129,7 @@ construct components id component =
             makeChildView id model
 
         CountParent model ->
-            wireChildParent components id model
+            makeParentView components id model
 
 
 render : ComponentId -> Dict ComponentId Component -> Maybe (Html Msg)
