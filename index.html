@@ -5525,6 +5525,66 @@ var author$project$ComponentTable$GotParentMsg = F3(
 	function (a, b, c) {
 		return {$: 'GotParentMsg', a: a, b: b, c: c};
 	});
+var author$project$ComponentTable$updateComponents = F3(
+	function (id, newMdl, mdl) {
+		return _Utils_update(
+			mdl,
+			{
+				components: A3(elm$core$Dict$insert, id, newMdl, mdl.components)
+			});
+	});
+var author$project$Parent$makeMessage = F2(
+	function (mdl, msg) {
+		if (msg.$ === 'Up') {
+			return elm$core$Platform$Cmd$none;
+		} else {
+			return elm$core$Platform$Cmd$none;
+		}
+	});
+var elm$core$Platform$Cmd$map = _Platform_map;
+var author$project$ComponentTable$update = F2(
+	function (msg, mdl) {
+		switch (msg.$) {
+			case 'SetView':
+				var newId = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						mdl,
+						{renderId: newId}),
+					elm$core$Platform$Cmd$none);
+			case 'GotParentMsg':
+				var id = msg.a;
+				var newComponent = msg.b;
+				var nextMsg = msg.c;
+				return _Utils_Tuple2(
+					A3(
+						author$project$ComponentTable$updateComponents,
+						id,
+						author$project$ComponentTable$CountParent(newComponent),
+						mdl),
+					A2(
+						elm$core$Platform$Cmd$map,
+						A2(author$project$ComponentTable$GotParentMsg, id, newComponent),
+						A2(author$project$Parent$makeMessage, newComponent, nextMsg)));
+			default:
+				var id = msg.a;
+				var newComponent = msg.b;
+				var nextMsg = msg.c;
+				return _Utils_Tuple2(
+					A3(
+						author$project$ComponentTable$updateComponents,
+						id,
+						author$project$ComponentTable$Count(newComponent),
+						mdl),
+					A2(
+						elm$core$Platform$Cmd$map,
+						A2(author$project$ComponentTable$GotCountMsg, id, newComponent),
+						A2(author$project$Child$makeMessage, newComponent, nextMsg)));
+		}
+	});
+var author$project$ComponentTable$SetView = function (a) {
+	return {$: 'SetView', a: a};
+};
 var elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -5556,72 +5616,6 @@ var elm$core$Dict$get = F2(
 			}
 		}
 	});
-var author$project$ComponentTable$updatePage = F3(
-	function (id, newMdl, mdl) {
-		var maybePage = A2(elm$core$Dict$get, id, mdl.components);
-		if (maybePage.$ === 'Just') {
-			var page = maybePage.a;
-			return _Utils_update(
-				mdl,
-				{
-					components: A3(elm$core$Dict$insert, id, newMdl, mdl.components)
-				});
-		} else {
-			return mdl;
-		}
-	});
-var author$project$Parent$makeMessage = F2(
-	function (mdl, msg) {
-		if (msg.$ === 'Up') {
-			return elm$core$Platform$Cmd$none;
-		} else {
-			return elm$core$Platform$Cmd$none;
-		}
-	});
-var elm$core$Platform$Cmd$map = _Platform_map;
-var author$project$ComponentTable$update = F2(
-	function (msg, mdl) {
-		switch (msg.$) {
-			case 'SetView':
-				var newId = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						mdl,
-						{renderId: newId}),
-					elm$core$Platform$Cmd$none);
-			case 'GotParentMsg':
-				var id = msg.a;
-				var newComponent = msg.b;
-				var nextMsg = msg.c;
-				return _Utils_Tuple2(
-					A3(
-						author$project$ComponentTable$updatePage,
-						id,
-						author$project$ComponentTable$CountParent(newComponent),
-						mdl),
-					A2(
-						elm$core$Platform$Cmd$map,
-						A2(author$project$ComponentTable$GotParentMsg, id, newComponent),
-						A2(author$project$Parent$makeMessage, newComponent, nextMsg)));
-			default:
-				var id = msg.a;
-				var newComponent = msg.b;
-				var nextMsg = msg.c;
-				return _Utils_Tuple2(
-					A3(
-						author$project$ComponentTable$updatePage,
-						id,
-						author$project$ComponentTable$Count(newComponent),
-						mdl),
-					A2(
-						elm$core$Platform$Cmd$map,
-						A2(author$project$ComponentTable$GotCountMsg, id, newComponent),
-						A2(author$project$Child$makeMessage, newComponent, nextMsg)));
-		}
-	});
-var author$project$ComponentTable$SetView = function (a) {
-	return {$: 'SetView', a: a};
-};
 var elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {

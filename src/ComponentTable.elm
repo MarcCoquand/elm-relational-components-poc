@@ -1,4 +1,4 @@
-module ComponentTable exposing (Component(..), ComponentId, Model, Msg(..), getChild, init, initialComponents, makeChildView, makeParentView, renderComponent, update, updatePage, view)
+module ComponentTable exposing (Model, Msg, init, update, view)
 
 import Child
 import Dict exposing (Dict)
@@ -29,18 +29,9 @@ type alias Model =
     }
 
 
-updatePage : ComponentId -> Component -> Model -> Model
-updatePage id newMdl mdl =
-    let
-        maybePage =
-            Dict.get id mdl.components
-    in
-    case maybePage of
-        Just page ->
-            { mdl | components = Dict.insert id newMdl mdl.components }
-
-        Nothing ->
-            mdl
+updateComponents : ComponentId -> Component -> Model -> Model
+updateComponents id newMdl mdl =
+    { mdl | components = Dict.insert id newMdl mdl.components }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -50,14 +41,14 @@ update msg mdl =
             ( { mdl | renderId = newId }, Cmd.none )
 
         GotParentMsg id newComponent nextMsg ->
-            ( updatePage id (CountParent newComponent) mdl
+            ( updateComponents id (CountParent newComponent) mdl
             , Cmd.map
                 (GotParentMsg id newComponent)
                 (Parent.makeMessage newComponent nextMsg)
             )
 
         GotCountMsg id newComponent nextMsg ->
-            ( updatePage id (Count newComponent) mdl
+            ( updateComponents id (Count newComponent) mdl
             , Cmd.map
                 (GotCountMsg id newComponent)
                 (Child.makeMessage newComponent nextMsg)
