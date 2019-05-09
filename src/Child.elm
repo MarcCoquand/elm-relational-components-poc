@@ -52,15 +52,18 @@ view sendMsg model =
 
 
 nestedView :
-    (Msg -> msg)
-    -> Model
-    -> (Parent.Msg -> msg)
+    (Parent.Msg -> msg)
     -> Parent.Model
+    -> List ( Msg -> msg, Model )
     -> Html msg
-nestedView handleChild childMdl handleParent parentMdl =
+nestedView handleParent parentMdl children =
     div []
         [ Parent.view handleParent parentMdl
-        , view handleChild childMdl
+        , div []
+            (List.map
+                (\( handleChild, childMdl ) -> view handleChild childMdl)
+                children
+            )
         ]
 
 

@@ -5132,7 +5132,7 @@ var author$project$ComponentTable$initialComponents = elm$core$Dict$fromList(
 			3,
 			author$project$ComponentTable$CountParent(author$project$Parent$init))
 		]));
-var author$project$ComponentTable$init = {components: author$project$ComponentTable$initialComponents, renderId: 1};
+var author$project$ComponentTable$init = {components: author$project$ComponentTable$initialComponents, renderId: 3};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -5691,60 +5691,6 @@ var author$project$ComponentTable$makeChildView = F2(
 			A2(author$project$ComponentTable$GotCountMsg, renderId, mdl),
 			mdl);
 	});
-var elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var author$project$ComponentTable$queryParent = F2(
-	function (components, id) {
-		return A2(
-			elm$core$Maybe$andThen,
-			function (component) {
-				if (component.$ === 'CountParent') {
-					var model = component.a;
-					return elm$core$Maybe$Just(model);
-				} else {
-					return elm$core$Maybe$Nothing;
-				}
-			},
-			A2(elm$core$Dict$get, id, components));
-	});
 var author$project$Parent$Down = {$: 'Down'};
 var author$project$Parent$Up = {$: 'Up'};
 var author$project$Parent$view = F2(
@@ -5780,136 +5726,6 @@ var author$project$Parent$view = F2(
 						]))
 				]));
 	});
-var author$project$Child$nestedView = F4(
-	function (handleChild, childMdl, handleParent, parentMdl) {
-		return A2(
-			elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(author$project$Parent$view, handleParent, parentMdl),
-					A2(author$project$Child$view, handleChild, childMdl)
-				]));
-	});
-var author$project$ComponentTable$wireChildParent = F4(
-	function (childModel, childId, parentId, parentModel) {
-		return A4(
-			author$project$Child$nestedView,
-			A2(author$project$ComponentTable$GotCountMsg, childId, childModel),
-			childModel,
-			A2(author$project$ComponentTable$GotParentMsg, parentId, parentModel),
-			parentModel);
-	});
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var author$project$ComponentTable$makeChild = F3(
-	function (components, id, model) {
-		var _n0 = model.parentId;
-		if (_n0.$ === 'Just') {
-			var parentId = _n0.a;
-			return A2(
-				elm$core$Maybe$map,
-				A3(author$project$ComponentTable$wireChildParent, model, id, parentId),
-				A2(author$project$ComponentTable$queryParent, components, parentId));
-		} else {
-			return elm$core$Maybe$Just(
-				A2(author$project$ComponentTable$makeChildView, id, model));
-		}
-	});
-var author$project$ComponentTable$makeParentView = F2(
-	function (renderId, mdl) {
-		return A2(
-			author$project$Parent$view,
-			A2(author$project$ComponentTable$GotParentMsg, renderId, mdl),
-			mdl);
-	});
-var author$project$ComponentTable$construct = F3(
-	function (components, id, component) {
-		if (component.$ === 'Count') {
-			var model = component.a;
-			return A3(author$project$ComponentTable$makeChild, components, id, model);
-		} else {
-			var model = component.a;
-			return elm$core$Maybe$Just(
-				A2(author$project$ComponentTable$makeParentView, id, model));
-		}
-	});
-var author$project$ComponentTable$render = F2(
-	function (id, components) {
-		return A2(
-			elm$core$Maybe$andThen,
-			A2(author$project$ComponentTable$construct, components, id),
-			A2(elm$core$Dict$get, id, components));
-	});
-var author$project$ComponentTable$view = function (state) {
-	var maybeRender = A2(author$project$ComponentTable$render, state.renderId, state.components);
-	if (maybeRender.$ === 'Just') {
-		var component = maybeRender.a;
-		return A2(
-			elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Events$onClick(
-							author$project$ComponentTable$SetView(1))
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('Click for view 1')
-						])),
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Events$onClick(
-							author$project$ComponentTable$SetView(4))
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('Click for view 3')
-						])),
-					component
-				]));
-	} else {
-		return elm$html$Html$text(
-			'Unknown id: ' + elm$core$String$fromInt(state.renderId));
-	}
-};
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
-};
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var elm$core$Task$succeed = _Scheduler_succeed;
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -5979,6 +5795,219 @@ var elm$core$List$map = F2(
 			_List_Nil,
 			xs);
 	});
+var author$project$Child$nestedView = F3(
+	function (handleParent, parentMdl, children) {
+		return A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(author$project$Parent$view, handleParent, parentMdl),
+					A2(
+					elm$html$Html$div,
+					_List_Nil,
+					A2(
+						elm$core$List$map,
+						function (_n0) {
+							var handleChild = _n0.a;
+							var childMdl = _n0.b;
+							return A2(author$project$Child$view, handleChild, childMdl);
+						},
+						children))
+				]));
+	});
+var author$project$ComponentTable$queryReducer = F3(
+	function (parentId, childId, component) {
+		if (component.$ === 'Count') {
+			var model = component.a;
+			return _Utils_eq(
+				model.parentId,
+				elm$core$Maybe$Just(parentId)) ? _List_fromArray(
+				[
+					_Utils_Tuple2(
+					A2(author$project$ComponentTable$GotCountMsg, childId, model),
+					model)
+				]) : _List_Nil;
+		} else {
+			return _List_Nil;
+		}
+	});
+var elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3(elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var author$project$ComponentTable$queryChildren = F2(
+	function (parentId, components) {
+		return A3(
+			elm$core$Dict$foldl,
+			F3(
+				function (id, component, list) {
+					return _Utils_ap(
+						list,
+						A3(author$project$ComponentTable$queryReducer, parentId, id, component));
+				}),
+			_List_Nil,
+			components);
+	});
+var author$project$ComponentTable$wireChildParent = F3(
+	function (components, parentId, parentModel) {
+		return A3(
+			author$project$Child$nestedView,
+			A2(author$project$ComponentTable$GotParentMsg, parentId, parentModel),
+			parentModel,
+			A2(author$project$ComponentTable$queryChildren, parentId, components));
+	});
+var author$project$ComponentTable$construct = F3(
+	function (components, id, component) {
+		if (component.$ === 'Count') {
+			var model = component.a;
+			return A2(author$project$ComponentTable$makeChildView, id, model);
+		} else {
+			var model = component.a;
+			return A3(author$project$ComponentTable$wireChildParent, components, id, model);
+		}
+	});
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var author$project$ComponentTable$render = F2(
+	function (id, components) {
+		return A2(
+			elm$core$Maybe$map,
+			A2(author$project$ComponentTable$construct, components, id),
+			A2(elm$core$Dict$get, id, components));
+	});
+var author$project$ComponentTable$view = function (state) {
+	var maybeRender = A2(author$project$ComponentTable$render, state.renderId, state.components);
+	if (maybeRender.$ === 'Just') {
+		var component = maybeRender.a;
+		return A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Events$onClick(
+							author$project$ComponentTable$SetView(1))
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('Click for view 1')
+						])),
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Events$onClick(
+							author$project$ComponentTable$SetView(3))
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('Click for view 3')
+						])),
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Events$onClick(
+							author$project$ComponentTable$SetView(4))
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('Click for view 4')
+						])),
+					component
+				]));
+	} else {
+		return elm$html$Html$text(
+			'Unknown id: ' + elm$core$String$fromInt(state.renderId));
+	}
+};
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$succeed = _Scheduler_succeed;
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
 var elm$core$Task$andThen = _Scheduler_andThen;
 var elm$core$Task$map = F2(
 	function (func, taskA) {
@@ -8090,31 +8119,6 @@ var elm$browser$Debugger$Metadata$collectBadUnions = F3(
 				elm$core$List$cons,
 				A2(elm$browser$Debugger$Metadata$ProblemType, name, problems),
 				list);
-		}
-	});
-var elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3(elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
-			}
 		}
 	});
 var elm$browser$Debugger$Metadata$isPortable = function (_n0) {
