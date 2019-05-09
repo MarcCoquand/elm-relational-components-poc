@@ -1,8 +1,9 @@
-module Child exposing (Model, Msg(..), init1, init2, makeMessage, update, view)
+module Child exposing (Model, Msg(..), init1, makeMessage, nestedView, update, view)
 
 import Html exposing (Html, button, div, h1, input, text)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick)
+import Parent
 
 
 
@@ -10,7 +11,7 @@ import Html.Events exposing (onClick)
 
 
 type alias Model =
-    { count : Int }
+    { count : Int, parentId : Maybe Int }
 
 
 type Msg
@@ -28,8 +29,8 @@ update cmd mdl =
             { mdl | count = mdl.count - 1 }
 
 
-makeMessage : Model -> Msg -> Cmd Msg
-makeMessage mdl msg =
+makeMessage : (Msg -> msg) -> Model -> Msg -> Cmd msg
+makeMessage merge mdl msg =
     case msg of
         Up ->
             Cmd.none
@@ -38,23 +39,31 @@ makeMessage mdl msg =
             Cmd.none
 
 
-view : Model -> Html Msg
-view model =
+view : (Msg -> msg) -> Model -> Html msg
+view sendMsg model =
     div []
-        [ button [ onClick Up ] [ Html.text "up" ]
+        [ button [ onClick (sendMsg Up) ] [ Html.text "up" ]
         , Html.text
             (String.fromInt
                 model.count
             )
-        , button [ onClick Down ] [ Html.text "down" ]
+        , button [ onClick (sendMsg Down) ] [ Html.text "down" ]
         ]
 
 
-init1 : Model
-init1 =
-    { count = 5 }
+nestedView :
+    (Msg -> msg)
+    -> Model
+    -> (Parent.Msg -> msg)
+    -> Parent.Model
+    -> Html msg
+nestedView handleChild childMdl handleParent parentMdl =
+    div []
+        [ Parent.view handleParent parentMdl
+        , view handleChild childMdl
+        ]
 
 
-init2 : Model
-init2 =
-    { count = 3 }
+init1 : Maybe Int -> Model
+init1 i =
+    { count = 5, parentId = i }

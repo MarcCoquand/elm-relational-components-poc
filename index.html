@@ -4880,17 +4880,16 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$Child$init1 = {count: 5};
-var author$project$Child$init2 = {count: 3};
+var author$project$Child$init1 = function (i) {
+	return {count: 5, parentId: i};
+};
 var author$project$ComponentTable$Count = function (a) {
 	return {$: 'Count', a: a};
 };
 var author$project$ComponentTable$CountParent = function (a) {
 	return {$: 'CountParent', a: a};
 };
-var author$project$Parent$init = function (i) {
-	return {childId: i, count: 5};
-};
+var author$project$Parent$init = {count: 5};
 var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
 var elm$core$Dict$Black = {$: 'Black'};
@@ -5113,24 +5112,27 @@ var elm$core$Dict$fromList = function (assocs) {
 		elm$core$Dict$empty,
 		assocs);
 };
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var author$project$ComponentTable$initialComponents = elm$core$Dict$fromList(
 	_List_fromArray(
 		[
 			_Utils_Tuple2(
 			1,
-			author$project$ComponentTable$Count(author$project$Child$init1)),
-			_Utils_Tuple2(
-			2,
-			author$project$ComponentTable$Count(author$project$Child$init2)),
+			author$project$ComponentTable$Count(
+				author$project$Child$init1(elm$core$Maybe$Nothing))),
 			_Utils_Tuple2(
 			4,
-			author$project$ComponentTable$Count(author$project$Child$init2)),
+			author$project$ComponentTable$Count(
+				author$project$Child$init1(
+					elm$core$Maybe$Just(3)))),
 			_Utils_Tuple2(
 			3,
-			author$project$ComponentTable$CountParent(
-				author$project$Parent$init(4)))
+			author$project$ComponentTable$CountParent(author$project$Parent$init))
 		]));
-var author$project$ComponentTable$init = {components: author$project$ComponentTable$initialComponents, renderId: 4};
+var author$project$ComponentTable$init = {components: author$project$ComponentTable$initialComponents, renderId: 1};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -5292,10 +5294,6 @@ var elm$core$Array$initialize = F2(
 			return A5(elm$core$Array$initializeHelp, fn, initialFromIndex, len, _List_Nil, tail);
 		}
 	});
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -5509,135 +5507,13 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
-var author$project$Child$makeMessage = F2(
-	function (mdl, msg) {
+var author$project$Child$makeMessage = F3(
+	function (merge, mdl, msg) {
 		if (msg.$ === 'Up') {
 			return elm$core$Platform$Cmd$none;
 		} else {
 			return elm$core$Platform$Cmd$none;
 		}
-	});
-var author$project$ComponentTable$GotCountMsg = F3(
-	function (a, b, c) {
-		return {$: 'GotCountMsg', a: a, b: b, c: c};
-	});
-var author$project$ComponentTable$GotParentMsg = F3(
-	function (a, b, c) {
-		return {$: 'GotParentMsg', a: a, b: b, c: c};
-	});
-var author$project$ComponentTable$updateComponents = F3(
-	function (id, newMdl, mdl) {
-		return _Utils_update(
-			mdl,
-			{
-				components: A3(elm$core$Dict$insert, id, newMdl, mdl.components)
-			});
-	});
-var author$project$Parent$makeMessage = F2(
-	function (mdl, msg) {
-		if (msg.$ === 'Up') {
-			return elm$core$Platform$Cmd$none;
-		} else {
-			return elm$core$Platform$Cmd$none;
-		}
-	});
-var elm$core$Platform$Cmd$map = _Platform_map;
-var author$project$ComponentTable$update = F2(
-	function (msg, mdl) {
-		switch (msg.$) {
-			case 'SetView':
-				var newId = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						mdl,
-						{renderId: newId}),
-					elm$core$Platform$Cmd$none);
-			case 'GotParentMsg':
-				var id = msg.a;
-				var newComponent = msg.b;
-				var nextMsg = msg.c;
-				return _Utils_Tuple2(
-					A3(
-						author$project$ComponentTable$updateComponents,
-						id,
-						author$project$ComponentTable$CountParent(newComponent),
-						mdl),
-					A2(
-						elm$core$Platform$Cmd$map,
-						A2(author$project$ComponentTable$GotParentMsg, id, newComponent),
-						A2(author$project$Parent$makeMessage, newComponent, nextMsg)));
-			default:
-				var id = msg.a;
-				var newComponent = msg.b;
-				var nextMsg = msg.c;
-				return _Utils_Tuple2(
-					A3(
-						author$project$ComponentTable$updateComponents,
-						id,
-						author$project$ComponentTable$Count(newComponent),
-						mdl),
-					A2(
-						elm$core$Platform$Cmd$map,
-						A2(author$project$ComponentTable$GotCountMsg, id, newComponent),
-						A2(author$project$Child$makeMessage, newComponent, nextMsg)));
-		}
-	});
-var author$project$ComponentTable$SetView = function (a) {
-	return {$: 'SetView', a: a};
-};
-var elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
-var author$project$ComponentTable$getChild = F2(
-	function (id, components) {
-		return A2(
-			elm$core$Maybe$andThen,
-			function (component) {
-				if (component.$ === 'Count') {
-					var model = component.a;
-					return elm$core$Maybe$Just(model);
-				} else {
-					return elm$core$Maybe$Nothing;
-				}
-			},
-			A2(elm$core$Dict$get, id, components));
 	});
 var author$project$Child$update = F2(
 	function (cmd, mdl) {
@@ -5651,6 +5527,89 @@ var author$project$Child$update = F2(
 				{count: mdl.count - 1});
 		}
 	});
+var author$project$ComponentTable$GotCountMsg = F3(
+	function (a, b, c) {
+		return {$: 'GotCountMsg', a: a, b: b, c: c};
+	});
+var author$project$ComponentTable$GotParentMsg = F3(
+	function (a, b, c) {
+		return {$: 'GotParentMsg', a: a, b: b, c: c};
+	});
+var author$project$ComponentTable$updateComponent = F3(
+	function (id, mdl, newMdl) {
+		return _Utils_update(
+			mdl,
+			{
+				components: A3(elm$core$Dict$insert, id, newMdl, mdl.components)
+			});
+	});
+var author$project$Parent$makeMessage = F3(
+	function (merger, mdl, msg) {
+		if (msg.$ === 'Up') {
+			return elm$core$Platform$Cmd$none;
+		} else {
+			return elm$core$Platform$Cmd$none;
+		}
+	});
+var author$project$Parent$update = F2(
+	function (cmd, mdl) {
+		if (cmd.$ === 'Up') {
+			return _Utils_update(
+				mdl,
+				{count: mdl.count + 1});
+		} else {
+			return _Utils_update(
+				mdl,
+				{count: mdl.count - 1});
+		}
+	});
+var author$project$ComponentTable$update = F2(
+	function (msg, mdl) {
+		switch (msg.$) {
+			case 'SetView':
+				var newId = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						mdl,
+						{renderId: newId}),
+					elm$core$Platform$Cmd$none);
+			case 'GotParentMsg':
+				var id = msg.a;
+				var newComponent = msg.b;
+				var innerMsg = msg.c;
+				return _Utils_Tuple2(
+					A3(
+						author$project$ComponentTable$updateComponent,
+						id,
+						mdl,
+						author$project$ComponentTable$CountParent(
+							A2(author$project$Parent$update, innerMsg, newComponent))),
+					A3(
+						author$project$Parent$makeMessage,
+						A2(author$project$ComponentTable$GotParentMsg, id, newComponent),
+						newComponent,
+						innerMsg));
+			default:
+				var id = msg.a;
+				var newComponent = msg.b;
+				var innerMsg = msg.c;
+				return _Utils_Tuple2(
+					A3(
+						author$project$ComponentTable$updateComponent,
+						id,
+						mdl,
+						author$project$ComponentTable$Count(
+							A2(author$project$Child$update, innerMsg, newComponent))),
+					A3(
+						author$project$Child$makeMessage,
+						A2(author$project$ComponentTable$GotCountMsg, id, newComponent),
+						newComponent,
+						innerMsg));
+		}
+	});
+var author$project$ComponentTable$SetView = function (a) {
+	return {$: 'SetView', a: a};
+};
 var author$project$Child$Down = {$: 'Down'};
 var author$project$Child$Up = {$: 'Up'};
 var elm$core$Basics$identity = function (x) {
@@ -5692,73 +5651,8 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
-var author$project$Child$view = function (model) {
-	return A2(
-		elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$button,
-				_List_fromArray(
-					[
-						elm$html$Html$Events$onClick(author$project$Child$Up)
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text('up')
-					])),
-				elm$html$Html$text(
-				elm$core$String$fromInt(model.count)),
-				A2(
-				elm$html$Html$button,
-				_List_fromArray(
-					[
-						elm$html$Html$Events$onClick(author$project$Child$Down)
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text('down')
-					]))
-			]));
-};
-var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
-var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
-var author$project$ComponentTable$makeChildView = F2(
-	function (renderId, mdl) {
-		return A2(
-			elm$html$Html$map,
-			function (msg) {
-				return A3(
-					author$project$ComponentTable$GotCountMsg,
-					renderId,
-					A2(author$project$Child$update, msg, mdl),
-					msg);
-			},
-			author$project$Child$view(mdl));
-	});
-var author$project$Parent$update = F2(
-	function (cmd, mdl) {
-		if (cmd.$ === 'Up') {
-			return _Utils_update(
-				mdl,
-				{count: mdl.count + 1});
-		} else {
-			return _Utils_update(
-				mdl,
-				{count: mdl.count - 1});
-		}
-	});
-var author$project$Parent$Child = function (a) {
-	return {$: 'Child', a: a};
-};
-var author$project$Parent$Down = {$: 'Down'};
-var author$project$Parent$Parent = function (a) {
-	return {$: 'Parent', a: a};
-};
-var author$project$Parent$Up = {$: 'Up'};
-var author$project$Parent$view = F2(
-	function (simpleView, model) {
+var author$project$Child$view = F2(
+	function (sendMsg, model) {
 		return A2(
 			elm$html$Html$div,
 			_List_Nil,
@@ -5769,7 +5663,7 @@ var author$project$Parent$view = F2(
 					_List_fromArray(
 						[
 							elm$html$Html$Events$onClick(
-							author$project$Parent$Parent(author$project$Parent$Up))
+							sendMsg(author$project$Child$Up))
 						]),
 					_List_fromArray(
 						[
@@ -5782,40 +5676,129 @@ var author$project$Parent$view = F2(
 					_List_fromArray(
 						[
 							elm$html$Html$Events$onClick(
-							author$project$Parent$Parent(author$project$Parent$Down))
+							sendMsg(author$project$Child$Down))
 						]),
 					_List_fromArray(
 						[
 							elm$html$Html$text('down')
-						])),
-					A2(elm$html$Html$map, author$project$Parent$Child, simpleView)
+						]))
 				]));
 	});
-var author$project$ComponentTable$makeParentView = F4(
-	function (renderId, parent, childId, child) {
+var author$project$ComponentTable$makeChildView = F2(
+	function (renderId, mdl) {
 		return A2(
-			elm$html$Html$map,
-			function (incMsg) {
-				if (incMsg.$ === 'Parent') {
-					var msg = incMsg.a;
-					return A3(
-						author$project$ComponentTable$GotParentMsg,
-						renderId,
-						A2(author$project$Parent$update, msg, parent),
-						msg);
+			author$project$Child$view,
+			A2(author$project$ComponentTable$GotCountMsg, renderId, mdl),
+			mdl);
+	});
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var author$project$ComponentTable$queryParent = F2(
+	function (components, id) {
+		return A2(
+			elm$core$Maybe$andThen,
+			function (component) {
+				if (component.$ === 'CountParent') {
+					var model = component.a;
+					return elm$core$Maybe$Just(model);
 				} else {
-					var msg = incMsg.a;
-					return A3(
-						author$project$ComponentTable$GotCountMsg,
-						childId,
-						A2(author$project$Child$update, msg, child),
-						msg);
+					return elm$core$Maybe$Nothing;
 				}
 			},
-			A2(
-				author$project$Parent$view,
-				author$project$Child$view(child),
-				parent));
+			A2(elm$core$Dict$get, id, components));
+	});
+var author$project$Parent$Down = {$: 'Down'};
+var author$project$Parent$Up = {$: 'Up'};
+var author$project$Parent$view = F2(
+	function (sendCmd, mdl) {
+		return A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Events$onClick(
+							sendCmd(author$project$Parent$Up))
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('up')
+						])),
+					elm$html$Html$text(
+					elm$core$String$fromInt(mdl.count)),
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Events$onClick(
+							sendCmd(author$project$Parent$Down))
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('down')
+						]))
+				]));
+	});
+var author$project$Child$nestedView = F4(
+	function (handleChild, childMdl, handleParent, parentMdl) {
+		return A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(author$project$Parent$view, handleParent, parentMdl),
+					A2(author$project$Child$view, handleChild, childMdl)
+				]));
+	});
+var author$project$ComponentTable$wireChildParent = F4(
+	function (childModel, childId, parentId, parentModel) {
+		return A4(
+			author$project$Child$nestedView,
+			A2(author$project$ComponentTable$GotCountMsg, childId, childModel),
+			childModel,
+			A2(author$project$ComponentTable$GotParentMsg, parentId, parentModel),
+			parentModel);
 	});
 var elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -5827,27 +5810,47 @@ var elm$core$Maybe$map = F2(
 			return elm$core$Maybe$Nothing;
 		}
 	});
-var author$project$ComponentTable$renderComponent = F2(
+var author$project$ComponentTable$makeChild = F3(
+	function (components, id, model) {
+		var _n0 = model.parentId;
+		if (_n0.$ === 'Just') {
+			var parentId = _n0.a;
+			return A2(
+				elm$core$Maybe$map,
+				A3(author$project$ComponentTable$wireChildParent, model, id, parentId),
+				A2(author$project$ComponentTable$queryParent, components, parentId));
+		} else {
+			return elm$core$Maybe$Just(
+				A2(author$project$ComponentTable$makeChildView, id, model));
+		}
+	});
+var author$project$ComponentTable$makeParentView = F2(
+	function (renderId, mdl) {
+		return A2(
+			author$project$Parent$view,
+			A2(author$project$ComponentTable$GotParentMsg, renderId, mdl),
+			mdl);
+	});
+var author$project$ComponentTable$construct = F3(
+	function (components, id, component) {
+		if (component.$ === 'Count') {
+			var model = component.a;
+			return A3(author$project$ComponentTable$makeChild, components, id, model);
+		} else {
+			var model = component.a;
+			return elm$core$Maybe$Just(
+				A2(author$project$ComponentTable$makeParentView, id, model));
+		}
+	});
+var author$project$ComponentTable$render = F2(
 	function (id, components) {
 		return A2(
 			elm$core$Maybe$andThen,
-			function (component) {
-				if (component.$ === 'Count') {
-					var model = component.a;
-					return elm$core$Maybe$Just(
-						A2(author$project$ComponentTable$makeChildView, id, model));
-				} else {
-					var model = component.a;
-					return A2(
-						elm$core$Maybe$map,
-						A3(author$project$ComponentTable$makeParentView, id, model, model.childId),
-						A2(author$project$ComponentTable$getChild, model.childId, components));
-				}
-			},
+			A2(author$project$ComponentTable$construct, components, id),
 			A2(elm$core$Dict$get, id, components));
 	});
 var author$project$ComponentTable$view = function (state) {
-	var maybeRender = A2(author$project$ComponentTable$renderComponent, state.renderId, state.components);
+	var maybeRender = A2(author$project$ComponentTable$render, state.renderId, state.components);
 	if (maybeRender.$ === 'Just') {
 		var component = maybeRender.a;
 		return A2(
@@ -5871,7 +5874,7 @@ var author$project$ComponentTable$view = function (state) {
 					_List_fromArray(
 						[
 							elm$html$Html$Events$onClick(
-							author$project$ComponentTable$SetView(3))
+							author$project$ComponentTable$SetView(4))
 						]),
 					_List_fromArray(
 						[
@@ -5880,7 +5883,8 @@ var author$project$ComponentTable$view = function (state) {
 					component
 				]));
 	} else {
-		return elm$html$Html$text('Nothing to render');
+		return elm$html$Html$text(
+			'Unknown id: ' + elm$core$String$fromInt(state.renderId));
 	}
 };
 var elm$browser$Browser$External = function (a) {
@@ -6289,6 +6293,8 @@ var elm$browser$Debugger$Overlay$viewButtons = function (buttons) {
 			]),
 		buttonNodes);
 };
+var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var elm$browser$Debugger$Overlay$viewMessage = F4(
 	function (config, title, details, buttons) {
@@ -8142,6 +8148,7 @@ var elm$browser$Debugger$Metadata$decode = function (value) {
 };
 var elm$browser$Debugger$Overlay$None = {$: 'None'};
 var elm$browser$Debugger$Overlay$none = elm$browser$Debugger$Overlay$None;
+var elm$core$Platform$Cmd$map = _Platform_map;
 var elm$browser$Debugger$Main$wrapInit = F4(
 	function (metadata, popout, init, flags) {
 		var _n0 = init(flags);
@@ -9981,7 +9988,7 @@ var author$project$Main$main = elm$browser$Browser$element(
 		view: author$project$ComponentTable$view
 	});
 _Platform_export({'Main':{'init':author$project$Main$main(
-	elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.0"},"types":{"message":"ComponentTable.Msg","aliases":{"Child.Model":{"args":[],"type":"{ count : Basics.Int }"},"ComponentTable.ComponentId":{"args":[],"type":"Basics.Int"},"Parent.Model":{"args":[],"type":"{ count : Basics.Int, childId : Basics.Int }"}},"unions":{"ComponentTable.Msg":{"args":[],"tags":{"GotCountMsg":["ComponentTable.ComponentId","Child.Model","Child.Msg"],"GotParentMsg":["ComponentTable.ComponentId","Parent.Model","Parent.Msg"],"SetView":["ComponentTable.ComponentId"]}},"Child.Msg":{"args":[],"tags":{"Up":[],"Down":[]}},"Parent.Msg":{"args":[],"tags":{"Up":[],"Down":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}}}}})}});}(this));
+	elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.0"},"types":{"message":"ComponentTable.Msg","aliases":{"Child.Model":{"args":[],"type":"{ count : Basics.Int, parentId : Maybe.Maybe Basics.Int }"},"ComponentTable.ComponentId":{"args":[],"type":"Basics.Int"},"Parent.Model":{"args":[],"type":"{ count : Basics.Int }"}},"unions":{"ComponentTable.Msg":{"args":[],"tags":{"GotCountMsg":["ComponentTable.ComponentId","Child.Model","Child.Msg"],"GotParentMsg":["ComponentTable.ComponentId","Parent.Model","Parent.Msg"],"SetView":["ComponentTable.ComponentId"]}},"Child.Msg":{"args":[],"tags":{"Up":[],"Down":[]}},"Parent.Msg":{"args":[],"tags":{"Up":[],"Down":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}}}}})}});}(this));
 
 var app = Elm.Main.init({ node: document.getElementById("elm-f0111bc4e658d0f98db96260c16f7e49") });
 if (document.getElementById("elm-f0111bc4e658d0f98db96260c16f7e49"))

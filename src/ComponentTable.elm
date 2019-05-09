@@ -29,8 +29,8 @@ type alias Model =
     }
 
 
-updateComponents : ComponentId -> Component -> Model -> Model
-updateComponents id newMdl mdl =
+updateComponent : ComponentId -> Model -> Component -> Model
+updateComponent id mdl newMdl =
     { mdl | components = Dict.insert id newMdl mdl.components }
 
 
@@ -40,51 +40,55 @@ update msg mdl =
         SetView newId ->
             ( { mdl | renderId = newId }, Cmd.none )
 
-        GotParentMsg id newComponent nextMsg ->
-            ( updateComponents id (CountParent newComponent) mdl
-            , Cmd.map
+        GotParentMsg id newComponent innerMsg ->
+            ( CountParent (Parent.update innerMsg newComponent)
+                |> updateComponent id mdl
+            , Parent.makeMessage
                 (GotParentMsg id newComponent)
-                (Parent.makeMessage newComponent nextMsg)
+                newComponent
+                innerMsg
             )
 
-        GotCountMsg id newComponent nextMsg ->
-            ( updateComponents id (Count newComponent) mdl
-            , Cmd.map
-                (GotCountMsg id newComponent)
-                (Child.makeMessage newComponent nextMsg)
+        GotCountMsg id newComponent innerMsg ->
+            ( Count (Child.update innerMsg newComponent)
+                |> updateComponent id mdl
+            , Child.makeMessage (GotCountMsg id newComponent)
+                newComponent
+                innerMsg
             )
 
 
 makeChildView : ComponentId -> Child.Model -> Html Msg
 makeChildView renderId mdl =
-    Html.map
-        (\msg -> GotCountMsg renderId (Child.update msg mdl) msg)
-        (Child.view mdl)
+    Child.view (GotCountMsg renderId mdl) mdl
 
 
-makeParentView : ComponentId -> Parent.Model -> ComponentId -> Child.Model -> Html Msg
-makeParentView renderId parent childId child =
-    Html.map
-        (\incMsg ->
-            case incMsg of
-                Parent.Parent msg ->
-                    GotParentMsg renderId (Parent.update msg parent) msg
-
-                Parent.Child msg ->
-                    GotCountMsg childId
-                        (Child.update msg child)
-                        msg
-        )
-        (Parent.view (Child.view child) parent)
+makeParentView : ComponentId -> Parent.Model -> Html Msg
+makeParentView renderId mdl =
+    Parent.view (GotParentMsg renderId mdl) mdl
 
 
-queryChild : ComponentId -> Dict ComponentId Component -> Maybe Child.Model
-queryChild id components =
+wireChildParent :
+    Child.Model
+    -> ComponentId
+    -> ComponentId
+    -> Parent.Model
+    -> Html Msg
+wireChildParent childModel childId parentId parentModel =
+    Child.nestedView
+        (GotCountMsg childId childModel)
+        childModel
+        (GotParentMsg parentId parentModel)
+        parentModel
+
+
+queryParent : Dict ComponentId Component -> ComponentId -> Maybe Parent.Model
+queryParent components id =
     Dict.get id components
         |> Maybe.andThen
             (\component ->
                 case component of
-                    Count model ->
+                    CountParent model ->
                         Just model
 
                     _ ->
@@ -92,51 +96,71 @@ queryChild id components =
             )
 
 
-renderComponent : ComponentId -> Dict ComponentId Component -> Maybe (Html Msg)
-renderComponent id components =
-    Dict.get id components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    Count model ->
-                        Just (makeChildView id model)
+makeChild :
+    Dict ComponentId Component
+    -> ComponentId
+    -> Child.Model
+    -> Maybe (Html Msg)
+makeChild components id model =
+    case model.parentId of
+        Just parentId ->
+            parentId
+                |> queryParent components
+                |> Maybe.map (wireChildParent model id parentId)
 
-                    CountParent model ->
-                        queryChild model.childId components
-                            |> Maybe.map (makeParentView id model model.childId)
-            )
+        Nothing ->
+            Just (makeChildView id model)
+
+
+construct :
+    Dict ComponentId Component
+    -> ComponentId
+    -> Component
+    -> Maybe (Html Msg)
+construct components id component =
+    case component of
+        Count model ->
+            makeChild components id model
+
+        CountParent model ->
+            Just (makeParentView id model)
+
+
+render : ComponentId -> Dict ComponentId Component -> Maybe (Html Msg)
+render id components =
+    Dict.get id components
+        |> Maybe.andThen (construct components id)
 
 
 view : Model -> Html Msg
 view state =
     let
         maybeRender =
-            renderComponent state.renderId state.components
+            render state.renderId state.components
     in
     case maybeRender of
         Just component ->
             div []
                 [ button [ onClick (SetView 1) ] [ Html.text "Click for view 1" ]
-                , button [ onClick (SetView 3) ] [ Html.text "Click for view 3" ]
+                , button [ onClick (SetView 4) ] [ Html.text "Click for view 3" ]
                 , component
                 ]
 
         Nothing ->
-            Html.text "Nothing to render"
+            Html.text ("Unknown id: " ++ String.fromInt state.renderId)
 
 
 initialComponents : Dict ComponentId Component
 initialComponents =
     Dict.fromList
-        [ ( 1, Count Child.init1 )
-        , ( 2, Count Child.init2 )
-        , ( 4, Count Child.init2 )
-        , ( 3, CountParent (Parent.init 4) )
+        [ ( 1, Count (Child.init1 Nothing) )
+        , ( 4, Count (Child.init1 (Just 3)) )
+        , ( 3, CountParent Parent.init )
         ]
 
 
 init : Model
 init =
-    { renderId = 4
+    { renderId = 1
     , components = initialComponents
     }
