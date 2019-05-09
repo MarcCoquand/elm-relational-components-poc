@@ -1,15 +1,15 @@
-module ComponentTable exposing (Component(..), ComponentId, Model, Msg(..), init, initialComponents, makeParentView, makeSimpleView, renderComponent, update, updatePage, view)
+module ComponentTable exposing (Component(..), ComponentId, Model, Msg(..), getChild, init, initialComponents, makeChildView, makeParentView, renderComponent, update, updatePage, view)
 
+import Child
 import Dict exposing (Dict)
 import Html exposing (Html, button, div)
 import Html.Events exposing (onClick)
 import Parent
 import Set exposing (Set)
-import Simple
 
 
 type Component
-    = Count Simple.Model
+    = Count Child.Model
     | CountParent Parent.Model
 
 
@@ -18,7 +18,7 @@ type alias ComponentId =
 
 
 type Msg
-    = GotCountMsg ComponentId Simple.Model Simple.Msg
+    = GotCountMsg ComponentId Child.Model Child.Msg
     | GotParentMsg ComponentId Parent.Model Parent.Msg
     | SetView ComponentId
 
@@ -60,18 +60,18 @@ update msg mdl =
             ( updatePage id (Count newComponent) mdl
             , Cmd.map
                 (GotCountMsg id newComponent)
-                (Simple.makeMessage newComponent nextMsg)
+                (Child.makeMessage newComponent nextMsg)
             )
 
 
-makeSimpleView : ComponentId -> Simple.Model -> Html Msg
-makeSimpleView renderId mdl =
+makeChildView : ComponentId -> Child.Model -> Html Msg
+makeChildView renderId mdl =
     Html.map
-        (\msg -> GotCountMsg renderId (Simple.update msg mdl) msg)
-        (Simple.view mdl)
+        (\msg -> GotCountMsg renderId (Child.update msg mdl) msg)
+        (Child.view mdl)
 
 
-makeParentView : ComponentId -> Parent.Model -> ComponentId -> Simple.Model -> Html Msg
+makeParentView : ComponentId -> Parent.Model -> ComponentId -> Child.Model -> Html Msg
 makeParentView renderId parent childId child =
     Html.map
         (\incMsg ->
@@ -81,13 +81,13 @@ makeParentView renderId parent childId child =
 
                 Parent.Child msg ->
                     GotCountMsg childId
-                        (Simple.update msg child)
+                        (Child.update msg child)
                         msg
         )
-        (Parent.view (Simple.view child) parent)
+        (Parent.view (Child.view child) parent)
 
 
-getChild : ComponentId -> Dict ComponentId Component -> Maybe Simple.Model
+getChild : ComponentId -> Dict ComponentId Component -> Maybe Child.Model
 getChild id components =
     Dict.get id components
         |> Maybe.andThen
@@ -108,7 +108,7 @@ renderComponent id components =
             (\component ->
                 case component of
                     Count model ->
-                        Just (makeSimpleView id model)
+                        Just (makeChildView id model)
 
                     CountParent model ->
                         getChild model.childId components
@@ -137,9 +137,9 @@ view state =
 initialComponents : Dict ComponentId Component
 initialComponents =
     Dict.fromList
-        [ ( 1, Count Simple.init1 )
-        , ( 2, Count Simple.init2 )
-        , ( 4, Count Simple.init2 )
+        [ ( 1, Count Child.init1 )
+        , ( 2, Count Child.init2 )
+        , ( 4, Count Child.init2 )
         , ( 3, CountParent (Parent.init 4) )
         ]
 

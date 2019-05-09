@@ -1,4 +1,4 @@
-module Simple exposing (Model, Msg(..), init1, init2, makeMessage, update, view)
+module Child exposing (Model, Msg(..), init1, init2, makeMessage, update, view)
 
 import Html exposing (Html, button, div, h1, input, text)
 import Html.Attributes exposing (placeholder)

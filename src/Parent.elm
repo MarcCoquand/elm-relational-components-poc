@@ -1,9 +1,9 @@
 module Parent exposing (From(..), Model, Msg(..), init, makeMessage, update, view)
 
+import Child
 import Html exposing (Html, button, div, h1, input, text)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick)
-import Simple
 
 
 
@@ -23,7 +23,7 @@ type Msg
 
 type From
     = Parent Msg
-    | Child Simple.Msg
+    | Child Child.Msg
 
 
 update : Msg -> Model -> Model
@@ -46,7 +46,7 @@ makeMessage mdl msg =
             Cmd.none
 
 
-view : Html Simple.Msg -> Model -> Html From
+view : Html Child.Msg -> Model -> Html From
 view simpleView model =
     div []
         [ button [ onClick (Parent Up) ] [ Html.text "up" ]
