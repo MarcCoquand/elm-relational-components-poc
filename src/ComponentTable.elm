@@ -18,8 +18,8 @@ type alias ComponentId =
 
 
 type Msg
-    = GotCountMsg ComponentId Child.Model Child.Msg
-    | GotParentMsg ComponentId Parent.Model Parent.Msg
+    = GotCountMsg ComponentId Child.Msg
+    | GotParentMsg ComponentId Parent.Msg
     | SetView Component ComponentId
 
 
@@ -30,14 +30,32 @@ type alias Model =
     }
 
 
-updateParent : ComponentId -> Model -> Parent.Model -> Model
-updateParent id mdl newMdl =
-    { mdl | parents = Dict.insert id newMdl mdl.parents }
+updateParent : ComponentId -> Parent.Msg -> Model -> ( Model, Cmd Msg )
+updateParent id msg mdl =
+    Dict.get id mdl.parents
+        |> Maybe.map (Parent.update msg)
+        |> Maybe.map
+            (\newMdl ->
+                ( { mdl | parents = Dict.insert id newMdl mdl.parents }
+                , Parent.makeMessage (GotParentMsg id) newMdl msg
+                )
+            )
+        |> Maybe.withDefault ( mdl, Cmd.none )
 
 
-updateChildren : ComponentId -> Model -> Child.Model -> Model
-updateChildren id mdl newMdl =
-    { mdl | children = Dict.insert id newMdl mdl.children }
+updateChild : ComponentId -> Child.Msg -> Model -> ( Model, Cmd Msg )
+updateChild id msg mdl =
+    Dict.get id mdl.children
+        |> Maybe.map (Child.update msg)
+        |> Maybe.map
+            (\newMdl ->
+                ( { mdl | children = Dict.insert id newMdl mdl.children }
+                , Child.makeMessage (GotCountMsg id)
+                    newMdl
+                    msg
+                )
+            )
+        |> Maybe.withDefault ( mdl, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -46,27 +64,16 @@ update msg mdl =
         SetView component newId ->
             ( { mdl | renderId = ( component, newId ) }, Cmd.none )
 
-        GotParentMsg id newComponent innerMsg ->
-            ( Parent.update innerMsg newComponent
-                |> updateParent id mdl
-            , Parent.makeMessage
-                (GotParentMsg id newComponent)
-                newComponent
-                innerMsg
-            )
+        GotParentMsg id innerMsg ->
+            updateParent id innerMsg mdl
 
-        GotCountMsg id newComponent innerMsg ->
-            ( Child.update innerMsg newComponent
-                |> updateChildren id mdl
-            , Child.makeMessage (GotCountMsg id newComponent)
-                newComponent
-                innerMsg
-            )
+        GotCountMsg id innerMsg ->
+            updateChild id innerMsg mdl
 
 
 makeChildView : ComponentId -> Child.Model -> Html Msg
 makeChildView renderId mdl =
-    Child.view (GotCountMsg renderId mdl) mdl
+    Child.view (GotCountMsg renderId) mdl
 
 
 makeParentView :
@@ -76,7 +83,7 @@ makeParentView :
     -> Html Msg
 makeParentView components parentId parentModel =
     queryChildren parentId components
-        |> Child.nestedView (GotParentMsg parentId parentModel) parentModel
+        |> Child.nestedView (GotParentMsg parentId) parentModel
 
 
 queryChildren :
@@ -87,7 +94,7 @@ queryChildren parentId components =
     Dict.foldl
         (\id component list ->
             if component.parentId == Just parentId then
-                list ++ [ ( GotCountMsg id component, component ) ]
+                list ++ [ ( GotCountMsg id, component ) ]
 
             else
                 list
