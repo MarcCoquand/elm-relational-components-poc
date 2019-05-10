@@ -137,10 +137,10 @@ view state =
 initialChildren : Dict ComponentId Child.Model
 initialChildren =
     Dict.fromList
-        [ ( 1, Child.init1 Nothing )
-        , ( 4, Child.init1 (Just 3) )
-        , ( 5, Child.init1 (Just 3) )
-        , ( 6, Child.init1 (Just 3) )
+        [ ( 1, Child.init Nothing )
+        , ( 4, Child.init (Just 3) )
+        , ( 5, Child.init (Just 3) )
+        , ( 6, Child.init (Just 3) )
         ]
 
 

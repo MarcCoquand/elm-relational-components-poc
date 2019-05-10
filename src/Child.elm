@@ -1,4 +1,4 @@
-module Child exposing (Model, Msg(..), init1, makeMessage, nestedView, update, view)
+module Child exposing (Model, Msg(..), init, makeMessage, nestedView, update, view)
 
 import Html exposing (Html, button, div, h1, input, text)
 import Html.Attributes exposing (placeholder)
@@ -67,6 +67,6 @@ nestedView handleParent parentMdl children =
         ]
 
 
-init1 : Maybe Int -> Model
-init1 i =
+init : Maybe Int -> Model
+init i =
     { count = 5, parentId = i }
