@@ -9,8 +9,8 @@ import Set exposing (Set)
 
 
 type Component
-    = Count Child.Model
-    | CountParent Parent.Model
+    = Count
+    | CountParent
 
 
 type alias ComponentId =
@@ -20,29 +20,35 @@ type alias ComponentId =
 type Msg
     = GotCountMsg ComponentId Child.Model Child.Msg
     | GotParentMsg ComponentId Parent.Model Parent.Msg
-    | SetView ComponentId
+    | SetView Component ComponentId
 
 
 type alias Model =
-    { renderId : ComponentId
-    , components : Dict ComponentId Component
+    { renderId : ( Component, ComponentId )
+    , parents : Dict ComponentId Parent.Model
+    , children : Dict ComponentId Child.Model
     }
 
 
-updateComponent : ComponentId -> Model -> Component -> Model
-updateComponent id mdl newMdl =
-    { mdl | components = Dict.insert id newMdl mdl.components }
+updateParent : ComponentId -> Model -> Parent.Model -> Model
+updateParent id mdl newMdl =
+    { mdl | parents = Dict.insert id newMdl mdl.parents }
+
+
+updateChildren : ComponentId -> Model -> Child.Model -> Model
+updateChildren id mdl newMdl =
+    { mdl | children = Dict.insert id newMdl mdl.children }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg mdl =
     case msg of
-        SetView newId ->
-            ( { mdl | renderId = newId }, Cmd.none )
+        SetView component newId ->
+            ( { mdl | renderId = ( component, newId ) }, Cmd.none )
 
         GotParentMsg id newComponent innerMsg ->
-            ( CountParent (Parent.update innerMsg newComponent)
-                |> updateComponent id mdl
+            ( Parent.update innerMsg newComponent
+                |> updateParent id mdl
             , Parent.makeMessage
                 (GotParentMsg id newComponent)
                 newComponent
@@ -50,8 +56,8 @@ update msg mdl =
             )
 
         GotCountMsg id newComponent innerMsg ->
-            ( Count (Child.update innerMsg newComponent)
-                |> updateComponent id mdl
+            ( Child.update innerMsg newComponent
+                |> updateChildren id mdl
             , Child.makeMessage (GotCountMsg id newComponent)
                 newComponent
                 innerMsg
@@ -64,7 +70,7 @@ makeChildView renderId mdl =
 
 
 makeParentView :
-    Dict ComponentId Component
+    Dict ComponentId Child.Model
     -> ComponentId
     -> Parent.Model
     -> Html Msg
@@ -73,41 +79,22 @@ makeParentView components parentId parentModel =
         |> Child.nestedView (GotParentMsg parentId parentModel) parentModel
 
 
-queryParent : Dict ComponentId Component -> ComponentId -> Maybe Parent.Model
-queryParent components id =
-    Dict.get id components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    CountParent model ->
-                        Just model
-
-                    _ ->
-                        Nothing
-            )
-
-
 queryReducer :
     ComponentId
     -> ComponentId
-    -> Component
+    -> Child.Model
     -> List ( Child.Msg -> Msg, Child.Model )
-queryReducer parentId childId component =
-    case component of
-        Count model ->
-            if model.parentId == Just parentId then
-                [ ( GotCountMsg childId model, model ) ]
+queryReducer parentId childId model =
+    if model.parentId == Just parentId then
+        [ ( GotCountMsg childId model, model ) ]
 
-            else
-                []
-
-        _ ->
-            []
+    else
+        []
 
 
 queryChildren :
     ComponentId
-    -> Dict ComponentId Component
+    -> Dict ComponentId Child.Model
     -> List ( Child.Msg -> Msg, Child.Model )
 queryChildren parentId components =
     Dict.foldl
@@ -118,58 +105,64 @@ queryChildren parentId components =
         components
 
 
-construct :
-    Dict ComponentId Component
-    -> ComponentId
-    -> Component
-    -> Html Msg
-construct components id component =
+render : Model -> Maybe (Html Msg)
+render state =
+    let
+        ( component, id ) =
+            state.renderId
+    in
     case component of
-        Count model ->
-            makeChildView id model
+        Count ->
+            Dict.get id state.children
+                |> Maybe.map (makeChildView id)
 
-        CountParent model ->
-            makeParentView components id model
-
-
-render : ComponentId -> Dict ComponentId Component -> Maybe (Html Msg)
-render id components =
-    Dict.get id components
-        |> Maybe.map (construct components id)
+        CountParent ->
+            Dict.get id state.parents
+                |> Maybe.map (makeParentView state.children id)
 
 
 view : Model -> Html Msg
 view state =
     let
         maybeRender =
-            render state.renderId state.components
+            render state
+
+        ( _, currentId ) =
+            state.renderId
     in
     case maybeRender of
         Just component ->
             div []
-                [ button [ onClick (SetView 1) ] [ Html.text "Click for view 1" ]
-                , button [ onClick (SetView 3) ] [ Html.text "Click for view 3" ]
-                , button [ onClick (SetView 4) ] [ Html.text "Click for view 4" ]
+                [ button [ onClick (SetView Count 1) ] [ Html.text "Click for view 1" ]
+                , button [ onClick (SetView CountParent 3) ] [ Html.text "Click for view 3" ]
+                , button [ onClick (SetView Count 4) ] [ Html.text "Click for view 4" ]
                 , component
                 ]
 
         Nothing ->
-            Html.text ("Unknown id: " ++ String.fromInt state.renderId)
+            Html.text ("Unknown id: " ++ String.fromInt currentId)
 
 
-initialComponents : Dict ComponentId Component
-initialComponents =
+initialChildren : Dict ComponentId Child.Model
+initialChildren =
     Dict.fromList
-        [ ( 1, Count (Child.init1 Nothing) )
-        , ( 4, Count (Child.init1 (Just 3)) )
-        , ( 5, Count (Child.init1 (Just 3)) )
-        , ( 6, Count (Child.init1 (Just 3)) )
-        , ( 3, CountParent Parent.init )
+        [ ( 1, Child.init1 Nothing )
+        , ( 4, Child.init1 (Just 3) )
+        , ( 5, Child.init1 (Just 3) )
+        , ( 6, Child.init1 (Just 3) )
+        ]
+
+
+initialParents : Dict ComponentId Parent.Model
+initialParents =
+    Dict.fromList
+        [ ( 3, Parent.init )
         ]
 
 
 init : Model
 init =
-    { renderId = 3
-    , components = initialComponents
+    { renderId = ( Count, 4 )
+    , children = initialChildren
+    , parents = initialParents
     }
