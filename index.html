@@ -5834,17 +5834,6 @@ var author$project$Child$nestedView = F3(
 						children))
 				]));
 	});
-var author$project$ComponentTable$queryReducer = F3(
-	function (parentId, childId, model) {
-		return _Utils_eq(
-			model.parentId,
-			elm$core$Maybe$Just(parentId)) ? _List_fromArray(
-			[
-				_Utils_Tuple2(
-				A2(author$project$ComponentTable$GotCountMsg, childId, model),
-				model)
-			]) : _List_Nil;
-	});
 var elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -5876,9 +5865,16 @@ var author$project$ComponentTable$queryChildren = F2(
 			elm$core$Dict$foldl,
 			F3(
 				function (id, component, list) {
-					return _Utils_ap(
+					return _Utils_eq(
+						component.parentId,
+						elm$core$Maybe$Just(parentId)) ? _Utils_ap(
 						list,
-						A3(author$project$ComponentTable$queryReducer, parentId, id, component));
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								A2(author$project$ComponentTable$GotCountMsg, id, component),
+								component)
+							])) : list;
 				}),
 			_List_Nil,
 			components);

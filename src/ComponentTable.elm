@@ -79,19 +79,6 @@ makeParentView components parentId parentModel =
         |> Child.nestedView (GotParentMsg parentId parentModel) parentModel
 
 
-queryReducer :
-    ComponentId
-    -> ComponentId
-    -> Child.Model
-    -> List ( Child.Msg -> Msg, Child.Model )
-queryReducer parentId childId model =
-    if model.parentId == Just parentId then
-        [ ( GotCountMsg childId model, model ) ]
-
-    else
-        []
-
-
 queryChildren :
     ComponentId
     -> Dict ComponentId Child.Model
@@ -99,7 +86,11 @@ queryChildren :
 queryChildren parentId components =
     Dict.foldl
         (\id component list ->
-            list ++ queryReducer parentId id component
+            if component.parentId == Just parentId then
+                list ++ [ ( GotCountMsg id component, component ) ]
+
+            else
+                list
         )
         []
         components
