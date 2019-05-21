@@ -1,4 +1,4 @@
-module Child exposing (Model, Msg(..), init, makeMessage, nestedView, update, view)
+module Child exposing (Model, Msg(..), init, nestedView, update, view)
 
 import Html exposing (Html, button, div, h1, input, text)
 import Html.Attributes exposing (placeholder)
@@ -10,8 +10,8 @@ import Parent
 -- MODEL
 
 
-type alias Model =
-    { count : Int, parentId : Maybe Int }
+type alias Model msg =
+    { count : Int, sendMsg : Msg -> msg, parentId : Maybe Int }
 
 
 type Msg
@@ -19,54 +19,43 @@ type Msg
     | Down
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model msg -> ( Model msg, Cmd msg )
 update cmd mdl =
     case cmd of
         Up ->
-            { mdl | count = mdl.count + 1 }
+            ( { mdl | count = mdl.count + 1 }, Cmd.none )
 
         Down ->
-            { mdl | count = mdl.count - 1 }
+            ( { mdl | count = mdl.count - 1 }, Cmd.none )
 
 
-makeMessage : (Msg -> msg) -> Model -> Msg -> Cmd msg
-makeMessage merge mdl msg =
-    case msg of
-        Up ->
-            Cmd.none
-
-        Down ->
-            Cmd.none
-
-
-view : (Msg -> msg) -> Model -> Html msg
-view sendMsg model =
+view : Model msg -> Html msg
+view model =
     div []
-        [ button [ onClick (sendMsg Up) ] [ Html.text "up" ]
+        [ button [ onClick (model.sendMsg Up) ] [ Html.text "up" ]
         , Html.text
             (String.fromInt
                 model.count
             )
-        , button [ onClick (sendMsg Down) ] [ Html.text "down" ]
+        , button [ onClick (model.sendMsg Down) ] [ Html.text "down" ]
         ]
 
 
 nestedView :
-    (Parent.Msg -> msg)
-    -> Parent.Model
-    -> List ( Msg -> msg, Model )
+    Parent.Model msg
+    -> List (Model msg)
     -> Html msg
-nestedView handleParent parentMdl children =
+nestedView parentMdl children =
     div []
-        [ Parent.view handleParent parentMdl
+        [ Parent.view parentMdl
         , div []
             (List.map
-                (\( handleChild, childMdl ) -> view handleChild childMdl)
+                (\childMdl -> view childMdl)
                 children
             )
         ]
 
 
-init : Maybe Int -> Model
-init i =
-    { count = 5, parentId = i }
+init : { childMsg : Msg -> msg, parentId : Maybe Int } -> Model msg
+init mdl =
+    { count = 5, sendMsg = mdl.childMsg, parentId = mdl.parentId }

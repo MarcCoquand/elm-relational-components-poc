@@ -1,4 +1,4 @@
-module Parent exposing (Model, Msg(..), init, makeMessage, update, view)
+module Parent exposing (Model, Msg(..), init, update, view)
 
 import Html exposing (Html, button, div, h1, input, text)
 import Html.Attributes exposing (placeholder)
@@ -9,8 +9,9 @@ import Html.Events exposing (onClick)
 -- MODEL
 
 
-type alias Model =
+type alias Model msg =
     { count : Int
+    , sendMsg : Msg -> msg
     }
 
 
@@ -19,38 +20,28 @@ type Msg
     | Down
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model msg -> ( Model msg, Cmd msg )
 update cmd mdl =
     case cmd of
         Up ->
-            { mdl | count = mdl.count + 1 }
+            ( { mdl | count = mdl.count + 1 }, Cmd.none )
 
         Down ->
-            { mdl | count = mdl.count - 1 }
+            ( { mdl | count = mdl.count - 1 }, Cmd.none )
 
 
-makeMessage : (Msg -> msg) -> Model -> Msg -> Cmd msg
-makeMessage merger mdl msg =
-    case msg of
-        Up ->
-            Cmd.none
-
-        Down ->
-            Cmd.none
-
-
-view : (Msg -> msg) -> Model -> Html msg
-view sendCmd mdl =
+view : Model msg -> Html msg
+view mdl =
     div []
-        [ button [ onClick (sendCmd Up) ] [ Html.text "up" ]
+        [ button [ onClick (mdl.sendMsg Up) ] [ Html.text "up" ]
         , Html.text
             (String.fromInt
                 mdl.count
             )
-        , button [ onClick (sendCmd Down) ] [ Html.text "down" ]
+        , button [ onClick (mdl.sendMsg Down) ] [ Html.text "down" ]
         ]
 
 
-init : Model
-init =
-    { count = 5 }
+init : (Msg -> msg) -> Model msg
+init msgMaker =
+    { count = 5, sendMsg = msgMaker }

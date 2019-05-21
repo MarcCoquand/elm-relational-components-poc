@@ -8,7 +8,7 @@ import Parent
 import Set exposing (Set)
 
 
-type Component
+type ComponentName
     = Count
     | CountParent
 
@@ -20,42 +20,48 @@ type alias ComponentId =
 type Msg
     = GotCountMsg ComponentId Child.Msg
     | GotParentMsg ComponentId Parent.Msg
-    | SetView Component ComponentId
+    | SetView ComponentName ComponentId
+
+
+type alias Component a =
+    Dict ComponentId a
 
 
 type alias Model =
-    { renderId : ( Component, ComponentId )
-    , parents : Dict ComponentId Parent.Model
-    , children : Dict ComponentId Child.Model
+    { renderId : ( ComponentName, ComponentId )
+    , parents : Component (Parent.Model Msg)
+    , children : Component (Child.Model Msg)
     }
 
 
-updateParent : ComponentId -> Parent.Msg -> Model -> ( Model, Cmd Msg )
-updateParent id msg mdl =
-    Dict.get id mdl.parents
-        |> Maybe.map (Parent.update msg)
-        |> Maybe.map
-            (\newMdl ->
-                ( { mdl | parents = Dict.insert id newMdl mdl.parents }
-                , Parent.makeMessage (GotParentMsg id) newMdl msg
-                )
-            )
-        |> Maybe.withDefault ( mdl, Cmd.none )
+type alias ComponentUpdate model =
+    ( Component model, Cmd Msg )
 
 
-updateChild : ComponentId -> Child.Msg -> Model -> ( Model, Cmd Msg )
-updateChild id msg mdl =
-    Dict.get id mdl.children
-        |> Maybe.map (Child.update msg)
-        |> Maybe.map
-            (\newMdl ->
-                ( { mdl | children = Dict.insert id newMdl mdl.children }
-                , Child.makeMessage (GotCountMsg id)
-                    newMdl
-                    msg
-                )
-            )
-        |> Maybe.withDefault ( mdl, Cmd.none )
+updateComponent :
+    { update : msg -> model -> ( model, Cmd Msg )
+    , msg : msg
+    , component : Component model
+    , id : ComponentId
+    , setRecord : ComponentUpdate model -> ( Model, Cmd Msg )
+    }
+    -> ( Model, Cmd Msg )
+updateComponent arg =
+    Dict.get arg.id arg.component
+        |> Maybe.map (arg.update arg.msg)
+        |> Maybe.map (\( mdl, cmd ) -> ( Dict.insert arg.id mdl arg.component, cmd ))
+        |> Maybe.withDefault ( arg.component, Cmd.none )
+        |> arg.setRecord
+
+
+parentSetter : Model -> ComponentUpdate (Parent.Model Msg) -> ( Model, Cmd Msg )
+parentSetter mdl ( component, msg ) =
+    ( { mdl | parents = component }, msg )
+
+
+childSetter : Model -> ComponentUpdate (Child.Model Msg) -> ( Model, Cmd Msg )
+childSetter mdl ( component, msg ) =
+    ( { mdl | children = component }, msg )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -65,36 +71,43 @@ update msg mdl =
             ( { mdl | renderId = ( component, newId ) }, Cmd.none )
 
         GotParentMsg id innerMsg ->
-            updateParent id innerMsg mdl
+            updateComponent
+                { update = Parent.update
+                , msg = innerMsg
+                , component = mdl.parents
+                , id = id
+                , setRecord = parentSetter mdl
+                }
 
         GotCountMsg id innerMsg ->
-            updateChild id innerMsg mdl
-
-
-makeChildView : ComponentId -> Child.Model -> Html Msg
-makeChildView renderId mdl =
-    Child.view (GotCountMsg renderId) mdl
+            updateComponent
+                { update = Child.update
+                , msg = innerMsg
+                , component = mdl.children
+                , id = id
+                , setRecord = childSetter mdl
+                }
 
 
 makeParentView :
-    Dict ComponentId Child.Model
+    Dict ComponentId (Child.Model Msg)
     -> ComponentId
-    -> Parent.Model
+    -> Parent.Model Msg
     -> Html Msg
 makeParentView components parentId parentModel =
     queryChildren parentId components
-        |> Child.nestedView (GotParentMsg parentId) parentModel
+        |> Child.nestedView parentModel
 
 
 queryChildren :
     ComponentId
-    -> Dict ComponentId Child.Model
-    -> List ( Child.Msg -> Msg, Child.Model )
+    -> Dict ComponentId (Child.Model Msg)
+    -> List (Child.Model Msg)
 queryChildren parentId components =
     Dict.foldl
         (\id component list ->
             if component.parentId == Just parentId then
-                list ++ [ ( GotCountMsg id, component ) ]
+                list ++ [ component ]
 
             else
                 list
@@ -112,7 +125,7 @@ render state =
     case component of
         Count ->
             Dict.get id state.children
-                |> Maybe.map (makeChildView id)
+                |> Maybe.map Child.view
 
         CountParent ->
             Dict.get id state.parents
@@ -141,20 +154,24 @@ view state =
             Html.text ("Unknown id: " ++ String.fromInt currentId)
 
 
-initialChildren : Dict ComponentId Child.Model
+initialChildren : Dict ComponentId (Child.Model Msg)
 initialChildren =
+    let
+        entry id parentId =
+            ( id, Child.init { childMsg = GotCountMsg id, parentId = parentId } )
+    in
     Dict.fromList
-        [ ( 1, Child.init Nothing )
-        , ( 4, Child.init (Just 3) )
-        , ( 5, Child.init (Just 3) )
-        , ( 6, Child.init (Just 3) )
+        [ entry 1 Nothing
+        , entry 4 (Just 3)
+        , entry 5 (Just 3)
+        , entry 6 (Just 3)
         ]
 
 
-initialParents : Dict ComponentId Parent.Model
+initialParents : Dict ComponentId (Parent.Model Msg)
 initialParents =
     Dict.fromList
-        [ ( 3, Parent.init )
+        [ ( 3, Parent.init (GotParentMsg 3) )
         ]
 
 
